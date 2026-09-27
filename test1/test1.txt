@@ -1,0 +1,4 @@
+The point of this first versoin was to make sure the cables and verilog code to establish a connection worked. 
+To do this there was one simple concept involving the internal clock and how its at 100MHz and this is what I needed to work around.
+The end goal of this was to get colors at the correct/desired pixel and perfect that before even getting video from my camera through the fpga board.
+The FPGA Used is an education NEXYS 4 DDR given by the school for a class.
