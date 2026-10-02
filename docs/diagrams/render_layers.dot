@@ -1,0 +1,14 @@
+digraph layers {
+    graph [rankdir=TB, bgcolor="white", fontname="Helvetica", labelloc=t,
+           label="Stage 2: procedural graphics overrides (later matching condition wins)", fontsize=15, nodesep=.35, ranksep=.5];
+    node [shape=box, style="rounded,filled", fillcolor="#eef3f9", color="#35618a", fontname="Helvetica", fontsize=11, penwidth=1.3];
+    edge [color="#40566b", arrowsize=.7];
+    a [label="Start each pixel\nrgb = black",fillcolor="#eeeef2"];
+    b [label="Visible area?\nbase dark background"];
+    c [label="Header, panels and speed digits"];
+    d [label="Bars and camera GRID placeholder",fillcolor="#fff3e1",color="#c4852c"];
+    e [label="Left/right indicators"];
+    f [label="Held center-button warning\n(high-priority late override)",fillcolor="#ffe5e5",color="#b65353"];
+    g [label="Final RGB444 pixel → top.v",fillcolor="#e6f4e6",color="#568250"];
+    a->b->c->d->e->f->g;
+}

@@ -1,0 +1,9 @@
+flowchart TD
+  clock[Board 100 MHz E3] --> timing[vga_timing.v]
+  timing -->|x, y, video_on| ui[dashboard_ui.v]
+  switches[Onboard switches and buttons] --> ui
+  ui -->|RGB444| top[top.v]
+  timing -->|HSYNC, VSYNC| top
+  top --> vga[12-bit VGA connector]
+  vga --> converter[Active VGA-to-HDMI converter]
+  converter --> monitor[Monitor]

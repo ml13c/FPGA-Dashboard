@@ -1,0 +1,21 @@
+digraph architecture {
+    graph [rankdir=LR, bgcolor="white", splines=ortho, nodesep=0.52, ranksep=0.8,
+        fontname="Helvetica", label="Stages 1–2: implemented FPGA video architecture", labelloc=t, fontsize=17];
+    node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#eff5fb", color="#32679b", penwidth=1.5, margin="0.14,0.08"];
+    edge [color="#40566b", arrowsize=.75, fontname="Helvetica", fontsize=10];
+    osc [label="Nexys 4 DDR\n100 MHz oscillator\nE3"];
+    timing [label="vga_timing.v\n2-bit pixel enable\nx/y counters\nHSYNC / VSYNC"];
+    inputs [label="Physical switches\nand buttons"];
+    mode [label="Pixel generator\nStage 1: color bars\nStage 2: dashboard_ui.v", fillcolor="#eaf4e6", color="#54804b"];
+    output [label="top.v\nRGB444 + blanking"];
+    pins [label="Nexys 4 DDR\nVGA connector"];
+    adapter [label="Active VGA-to-HDMI\nconverter"];
+    monitor [label="Monitor", fillcolor="#fff6e3", color="#be8233"];
+    osc -> timing [label="CLK100MHZ"];
+    timing -> mode [label="x, y, video_on"];
+    inputs -> mode [label="Stage 2 only"];
+    mode -> output [label="RGB444"];
+    timing -> pins [label="HS, VS", constraint=false];
+    output -> pins [label="R/G/B"];
+    pins -> adapter -> monitor;
+}

@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> C0
+    C0: pixel_cnt = 00
+    C1: pixel_cnt = 01
+    C2: pixel_cnt = 10
+    C3: pixel_cnt = 11, pixel_tick = 1
+    C0 --> C1: rising clock
+    C1 --> C2: rising clock
+    C2 --> C3: rising clock
+    C3 --> C0: rising clock
