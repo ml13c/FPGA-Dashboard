@@ -11,20 +11,3 @@ These documents cover the **implemented Stage 1 VGA test pattern** and **impleme
 | [Verification](verification.md) | Actual hardware evidence, photos, and a clearly labeled test plan |
 | [Design Decisions](design_decisions.md) | Reasoning, limitations, alternatives, and future camera integration |
 | [Diagrams and UML](uml_diagrams.md) | All figures plus editable Mermaid state/dataflow examples |
-
-**Diagram files:** [`diagrams/`](diagrams/) contains SVGs (ready to embed in GitHub), Graphviz `.dot` sources (editable), timing PNG, and Mermaid `.mmd` examples. **Hardware photos:** [`images/`](images/) contains the two demonstrations.
-
-If your code is kept in a different GitHub folder layout, these documents still work: source filenames are written as code identifiers rather than hyperlinks to an assumed `rtl/` directory.
-
-For the repository's main `README.md`, add:
-
-```markdown
-## Engineering documentation
-
-See the [documentation index](docs/README.md) for architecture, VGA timing,
-RTL design decisions, pinouts, verified results, and diagrams.
-```
-
-**References:** [Digilent Nexys 4 DDR Master XDC](https://github.com/Digilent/digilent-xdc/blob/master/Nexys-4-DDR-Master.xdc) · [Nexys 4 DDR reference manual](https://digilent.com/reference/programmable-logic/nexys-4-ddr/reference-manual)
-
-**Board naming:** The previously uploaded PDF titled *Nexys-4-DDR-Master Manual.pdf* actually labels itself **Nexys 4 Rev. B** and describes CellularRAM. This documentation instead uses the uploaded **Nexys 4 DDR Master XDC** for the project's package-pin mappings and does not assume that the original Nexys 4 has DDR2.
