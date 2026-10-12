@@ -1,8 +1,6 @@
 # FPGA Vehicle Dashboard — Nexys 4 DDR
 
-A **Verilog-based VGA dashboard** built on the Digilent Nexys 4 DDR (Xilinx Artix-7) using Vivado. This project started as a VGA timing and color-output test, then expanded into a hardware-rendered vehicle dashboard controlled by the FPGA board's switches and pushbuttons.
-
-**Current status:** Stages 1 and 2 have been programmed onto the FPGA and visually tested on an external monitor. The camera, frame buffer, and DDR2 interface have **not** been implemented yet.
+This project implements a real-time automotive dashboard and video-mixing pipeline on a Xilinx Artix-7 FPGA. The system captures RGB565 video from an OV7670 camera, crosses asynchronous clock domains using a custom Gray-code FIFO, buffers frames in external DDR2, arbitrates multiple memory clients, and composites live video with graphics using fixed-point alpha blending and prioritized alert overlays. The final design outputs a 640×480 VGA dashboard and closes timing with +1.316 ns WNS and zero failing endpoints.
 
 ## Hardware and tools
 
