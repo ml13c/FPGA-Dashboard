@@ -496,39 +496,39 @@ module top (
         .out_rgb(blended_camera_rgb)
     );
 
-    // The alpha pipeline adds two 100 MHz cycles after the cache read. Delay
-    // dashboard coordinates and VGA control by the same amount. Because the VGA
-    // coordinate generator advances only every fourth 100 MHz cycle, this also
-    // leaves comfortable pixel-domain timing margin.
-    reg [9:0] x_d0 = 10'd0, x_d1 = 10'd0, x_d2 = 10'd0;
-    reg [9:0] y_d0 = 10'd0, y_d1 = 10'd0, y_d2 = 10'd0;
-    reg video_d0 = 1'b0, video_d1 = 1'b0, video_d2 = 1'b0;
-    reg hs_d0 = 1'b1, hs_d1 = 1'b1, hs_d2 = 1'b1;
-    reg vs_d0 = 1'b1, vs_d1 = 1'b1, vs_d2 = 1'b1;
-    reg test_d0 = 1'b0, test_d1 = 1'b0, test_d2 = 1'b0;
+    // Timing-closure update: the alpha blender now registers its BRAM/cache
+    // inputs before the multiply stage. That adds one 100 MHz cycle versus the
+    // previous design, so delay coordinates and VGA control by one extra cycle
+    // to keep the composited pixels aligned with HS/VS and the dashboard.
+    reg [9:0] x_d0 = 10'd0, x_d1 = 10'd0, x_d2 = 10'd0, x_d3 = 10'd0;
+    reg [9:0] y_d0 = 10'd0, y_d1 = 10'd0, y_d2 = 10'd0, y_d3 = 10'd0;
+    reg video_d0 = 1'b0, video_d1 = 1'b0, video_d2 = 1'b0, video_d3 = 1'b0;
+    reg hs_d0 = 1'b1, hs_d1 = 1'b1, hs_d2 = 1'b1, hs_d3 = 1'b1;
+    reg vs_d0 = 1'b1, vs_d1 = 1'b1, vs_d2 = 1'b1, vs_d3 = 1'b1;
+    reg test_d0 = 1'b0, test_d1 = 1'b0, test_d2 = 1'b0, test_d3 = 1'b0;
 
     always @(posedge clk100) begin
-        x_d0 <= x;       x_d1 <= x_d0;       x_d2 <= x_d1;
-        y_d0 <= y;       y_d1 <= y_d0;       y_d2 <= y_d1;
-        video_d0 <= video_on; video_d1 <= video_d0; video_d2 <= video_d1;
-        hs_d0 <= hsync;  hs_d1 <= hs_d0;     hs_d2 <= hs_d1;
-        vs_d0 <= vsync;  vs_d1 <= vs_d0;     vs_d2 <= vs_d1;
-        test_d0 <= SW[8]; test_d1 <= test_d0; test_d2 <= test_d1;
+        x_d0 <= x;       x_d1 <= x_d0;       x_d2 <= x_d1;       x_d3 <= x_d2;
+        y_d0 <= y;       y_d1 <= y_d0;       y_d2 <= y_d1;       y_d3 <= y_d2;
+        video_d0 <= video_on; video_d1 <= video_d0; video_d2 <= video_d1; video_d3 <= video_d2;
+        hs_d0 <= hsync;  hs_d1 <= hs_d0;     hs_d2 <= hs_d1;     hs_d3 <= hs_d2;
+        vs_d0 <= vsync;  vs_d1 <= vs_d0;     vs_d2 <= vs_d1;     vs_d3 <= vs_d2;
+        test_d0 <= SW[8]; test_d1 <= test_d0; test_d2 <= test_d1; test_d3 <= test_d2;
     end
 
     // SW8 remains a display-only test pattern. Generate it from the delayed
     // coordinate so it stays aligned with the Stage 10 video pipeline.
     reg [11:0] test_rgb;
     always @(*) begin
-        if (x_d2 < 10'd340)      test_rgb = 12'hf00;
-        else if (x_d2 < 10'd420) test_rgb = 12'h0f0;
-        else if (x_d2 < 10'd500) test_rgb = 12'h00f;
+        if (x_d3 < 10'd340)      test_rgb = 12'hf00;
+        else if (x_d3 < 10'd420) test_rgb = 12'h0f0;
+        else if (x_d3 < 10'd500) test_rgb = 12'h00f;
         else                     test_rgb = 12'hfff;
     end
 
     wire delayed_camera_active = cache_display_valid &&
-        (x_d2 >= 10'd260) && (x_d2 < 10'd580) &&
-        (y_d2 >= 10'd100) && (y_d2 < 10'd340);
+        (x_d3 >= 10'd260) && (x_d3 < 10'd580) &&
+        (y_d3 >= 10'd100) && (y_d3 < 10'd340);
 
     // -------------------------------------------------------------------------
     // Stage 11 priority compositor controls. Board pushbuttons are asynchronous
@@ -565,11 +565,11 @@ module top (
     // owns alert policy. Individual left/right buttons still drive turn icons.
     wire [11:0] base_dashboard_rgb;
     dashboard_ui ui(
-        .x(x_d2), .y(y_d2), .video_on(video_d2),
+        .x(x_d3), .y(y_d3), .video_on(video_d3),
         .speed(SW[7:0]), .battery(SW[15:12]),
         .warning(1'b0), .turn_left(btnl), .turn_right(btnr),
-        .camera_active(delayed_camera_active || test_d2),
-        .camera_rgb(test_d2 ? test_rgb : blended_camera_rgb),
+        .camera_active(delayed_camera_active || test_d3),
+        .camera_rgb(test_d3 ? test_rgb : blended_camera_rgb),
         .rgb(base_dashboard_rgb)
     );
 
@@ -589,9 +589,9 @@ module top (
     wire [11:0] rgb;
 
     stage11_priority_compositor priority_compositor (
-        .x(x_d2),
-        .y(y_d2),
-        .video_on(video_d2),
+        .x(x_d3),
+        .y(y_d3),
+        .video_on(video_d3),
         .base_rgb(base_dashboard_rgb),
         .warning_request(warning_request),
         .critical_request(critical_request),
@@ -600,11 +600,11 @@ module top (
         .active_level(compositor_level)
     );
 
-    assign VGA_R = video_d2 ? rgb[11:8] : 4'h0;
-    assign VGA_G = video_d2 ? rgb[7:4]  : 4'h0;
-    assign VGA_B = video_d2 ? rgb[3:0]  : 4'h0;
-    assign VGA_HS = hs_d2;
-    assign VGA_VS = vs_d2;
+    assign VGA_R = video_d3 ? rgb[11:8] : 4'h0;
+    assign VGA_G = video_d3 ? rgb[7:4]  : 4'h0;
+    assign VGA_B = video_d3 ? rgb[3:0]  : 4'h0;
+    assign VGA_HS = hs_d3;
+    assign VGA_VS = vs_d3;
 
     // -------------------------------------------------------------------------
     // Diagnostics. Grant indicators remain sticky. Stage 10 adds a synchronized
@@ -1773,25 +1773,31 @@ module alpha_blend_rgb444_pipe (
     input  wire [7:0]  alpha,
     output reg  [11:0] out_rgb
 );
-    wire [7:0] bg_r8 = {background_rgb[11:8], background_rgb[11:8]};
-    wire [7:0] bg_g8 = {background_rgb[7:4],  background_rgb[7:4]};
-    wire [7:0] bg_b8 = {background_rgb[3:0],  background_rgb[3:0]};
-    wire [7:0] fg_r8 = {foreground_rgb[11:8], foreground_rgb[11:8]};
-    wire [7:0] fg_g8 = {foreground_rgb[7:4],  foreground_rgb[7:4]};
-    wire [7:0] fg_b8 = {foreground_rgb[3:0],  foreground_rgb[3:0]};
-    wire [7:0] inv_alpha = 8'hff - alpha;
+    // Stage 0: register cache/BRAM outputs immediately. This deliberately breaks
+    // the former BRAM -> RGB expansion -> multiplier critical path.
+    reg [7:0] bg_r_in = 8'd0, bg_g_in = 8'd0, bg_b_in = 8'd0;
+    reg [7:0] fg_r_in = 8'd0, fg_g_in = 8'd0, fg_b_in = 8'd0;
+    reg [7:0] alpha_in = 8'd0;
+    reg [11:0] bg_in_hold = 12'd0, fg_in_hold = 12'd0;
 
-    reg [15:0] fg_r_mul = 16'd0, fg_g_mul = 16'd0, fg_b_mul = 16'd0;
-    reg [15:0] bg_r_mul = 16'd0, bg_g_mul = 16'd0, bg_b_mul = 16'd0;
+    // Stage 1: six fixed-point products. The use_dsp hint asks Vivado to map the
+    // multiplies into DSP48E1 resources where practical instead of deep LUT logic.
+    (* use_dsp = "yes" *) reg [15:0] fg_r_mul = 16'd0, fg_g_mul = 16'd0, fg_b_mul = 16'd0;
+    (* use_dsp = "yes" *) reg [15:0] bg_r_mul = 16'd0, bg_g_mul = 16'd0, bg_b_mul = 16'd0;
     reg [11:0] bg_hold = 12'd0, fg_hold = 12'd0;
     reg alpha_zero = 1'b1, alpha_full = 1'b0;
 
+    wire [7:0] inv_alpha_in = 8'hff - alpha_in;
     wire [16:0] r_sum = {1'b0, fg_r_mul} + {1'b0, bg_r_mul} + 17'd128;
     wire [16:0] g_sum = {1'b0, fg_g_mul} + {1'b0, bg_g_mul} + 17'd128;
     wire [16:0] b_sum = {1'b0, fg_b_mul} + {1'b0, bg_b_mul} + 17'd128;
 
     always @(posedge clk or negedge resetn) begin
         if (!resetn) begin
+            bg_r_in <= 8'd0; bg_g_in <= 8'd0; bg_b_in <= 8'd0;
+            fg_r_in <= 8'd0; fg_g_in <= 8'd0; fg_b_in <= 8'd0;
+            alpha_in <= 8'd0;
+            bg_in_hold <= 12'd0; fg_in_hold <= 12'd0;
             fg_r_mul <= 16'd0; fg_g_mul <= 16'd0; fg_b_mul <= 16'd0;
             bg_r_mul <= 16'd0; bg_g_mul <= 16'd0; bg_b_mul <= 16'd0;
             bg_hold <= 12'd0; fg_hold <= 12'd0;
@@ -1799,19 +1805,30 @@ module alpha_blend_rgb444_pipe (
             alpha_full <= 1'b0;
             out_rgb <= 12'd0;
         end else begin
-            // Pipeline stage 1: six 8x8 fixed-point products.
-            fg_r_mul <= fg_r8 * alpha;
-            fg_g_mul <= fg_g8 * alpha;
-            fg_b_mul <= fg_b8 * alpha;
-            bg_r_mul <= bg_r8 * inv_alpha;
-            bg_g_mul <= bg_g8 * inv_alpha;
-            bg_b_mul <= bg_b8 * inv_alpha;
-            bg_hold <= background_rgb;
-            fg_hold <= foreground_rgb;
-            alpha_zero <= (alpha == 8'h00);
-            alpha_full <= (alpha == 8'hff);
+            // Pipeline stage 0: cheap input registers placed after the cache.
+            bg_r_in <= {background_rgb[11:8], background_rgb[11:8]};
+            bg_g_in <= {background_rgb[7:4],  background_rgb[7:4]};
+            bg_b_in <= {background_rgb[3:0],  background_rgb[3:0]};
+            fg_r_in <= {foreground_rgb[11:8], foreground_rgb[11:8]};
+            fg_g_in <= {foreground_rgb[7:4],  foreground_rgb[7:4]};
+            fg_b_in <= {foreground_rgb[3:0],  foreground_rgb[3:0]};
+            alpha_in <= alpha;
+            bg_in_hold <= background_rgb;
+            fg_in_hold <= foreground_rgb;
 
-            // Pipeline stage 2: add, round and divide by 256 with a shift.
+            // Pipeline stage 1: multiplication from registered inputs.
+            fg_r_mul <= fg_r_in * alpha_in;
+            fg_g_mul <= fg_g_in * alpha_in;
+            fg_b_mul <= fg_b_in * alpha_in;
+            bg_r_mul <= bg_r_in * inv_alpha_in;
+            bg_g_mul <= bg_g_in * inv_alpha_in;
+            bg_b_mul <= bg_b_in * inv_alpha_in;
+            bg_hold <= bg_in_hold;
+            fg_hold <= fg_in_hold;
+            alpha_zero <= (alpha_in == 8'h00);
+            alpha_full <= (alpha_in == 8'hff);
+
+            // Pipeline stage 2: add, round, and divide by 256 with a shift.
             if (alpha_zero)
                 out_rgb <= bg_hold;
             else if (alpha_full)
