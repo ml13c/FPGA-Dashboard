@@ -537,18 +537,16 @@ Worst Pulse Width Slack: +0.206 ns
 Pulse Width Failing Endpoints: 0
 ```
 
-Add the final Vivado Timing Summary screenshot here:
 
 ```markdown
-![Vivado Timing Summary](docs/timing_summary.png)
+![Vivado Timing Summary](docs/FPGA-dash-Report_timing_summary.png)
 ```
 
 ### Utilization
 
-Add the final Vivado Utilization Summary screenshot here:
 
 ```markdown
-![Vivado Utilization Summary](docs/utilization_summary.png)
+![Vivado Utilization Summary](docs/FPGA-dash-Utilization_summary.png)
 ```
 
 ---
