@@ -506,6 +506,8 @@ The completed system displays a real-time automotive-style interface with:
 +------------------------------------------------+
 ```
 
+![Vivado Hardware Results](docs/fpga_dashboard.jpg)
+
 The display supports real-time changes between:
 
 ```text
@@ -538,16 +540,13 @@ Pulse Width Failing Endpoints: 0
 ```
 
 
-```markdown
+
 ![Vivado Timing Summary](docs/FPGA-dash-Report_timing_summary.png)
-```
 
 ### Utilization
 
 
-```markdown
 ![Vivado Utilization Summary](docs/FPGA-dash-Utilization_summary.png)
-```
 
 ---
 
